@@ -19,8 +19,8 @@
   when: ansible_distribution == "{{ centos }}"
 
 - name: passing telegraf configuration file
-  copy:
-    src: telegraf.conf
+  template:
+    src: telegraf.conf.j2
     dest: /etc/telegraf/telegraf.conf
     mode: 0644
 
