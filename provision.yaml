@@ -1,0 +1,16 @@
+- name: provision server
+  hosts: observer_servers
+  become: yes
+  tags:
+    - observer
+  roles:
+    - docker
+    - observer
+
+- name: provision telegraf slave
+  hosts: slave_servers
+  become: yes
+  tags:
+    - slave_servers
+  roles:
+    - target 

@@ -1,0 +1,32 @@
+---
+# tasks file for telegraf-slave
+- name: confige telegraf
+  shell: |
+    cat <<EOF | sudo tee /etc/yum.repos.d/influxdb.repo
+    [influxdb]
+    name = InfluxData Repository - Stable
+    baseurl = https://repos.influxdata.com/stable/\$basearch/main
+    enabled = 1
+    gpgcheck = 1
+    gpgkey = https://repos.influxdata.com/influxdata-archive_compat.key
+    EOF
+  when: ansible_distribution == "{{ centos }}"
+
+- name: install telegraf
+  yum:
+   name: telegraf
+   state: present
+  when: ansible_distribution == "{{ centos }}"
+
+- name: passing telegraf configuration file
+  copy:
+    src: telegraf.conf
+    dest: /etc/telegraf/telegraf.conf
+    mode: 0644
+
+- name: started telegraf
+  service:
+    name: telegraf
+    state: started
+    enabled: yes
+  notify: restart telegraf-slave
