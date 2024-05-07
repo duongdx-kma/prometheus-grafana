@@ -13,11 +13,6 @@ scrape_configs:
     static_configs:
     - targets: ["192.168.56.190:9273", "192.168.56.191:9273"]
   
-  - job_name: node
-    metrics_path: /metrics
-    static_configs:
-    - targets: ["192.168.56.190:9100", "192.168.56.191:9100"]
-
 rule_files:
   - prometheus_alerts_rules.yml
 

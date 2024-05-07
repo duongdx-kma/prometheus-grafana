@@ -16,14 +16,6 @@ scrape_configs:
       - {{ item }}
       {% endfor %}
   
-  - job_name: node
-    metrics_path: /metrics
-    static_configs:
-    - targets:
-      {% for item in node_host %}
-      - {{ item }}
-      {% endfor %}
-
 rule_files:
   - prometheus_alerts_rules.yml
 

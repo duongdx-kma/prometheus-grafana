@@ -1,5 +1,47 @@
 ---
+#######################################
+# install and configure firewalld
+#######################################
+- name: instal 
+  yum:
+    name: firewalld
+    state: present
+    update_cache: yes
+  when: ansible_distribution == "{{ centos }}"
+
+- name: start firewalld
+  service:
+    name: firewalld
+    state: started
+    enabled: yes
+
+- name: expose prometheus port
+  firewalld:
+    zone: public
+    port: "9090/tcp"
+    permanent: true
+    state: enabled
+  notify: restart firewalld
+
+- name: expose grafana port
+  firewalld:
+    zone: public
+    port: "3000/tcp"
+    permanent: true
+    state: enabled
+  notify: restart firewalld
+
+- name: expose alertmanager port
+  firewalld:
+    zone: public
+    port: "9093/tcp"
+    permanent: true
+    state: enabled
+  notify: restart firewalld
+
+#######################################
 # install and update pip
+#######################################
 - name: Update YUM cache
   yum:
     name: '*'
@@ -9,8 +51,9 @@
   yum:
     name: python-docker
     state: present
-
+#######################################
 # tasks file for observer
+#######################################
 - name: Create Folder /srv/prometheus if not exist
   file:
     path: /srv/prometheus
@@ -54,7 +97,9 @@
     src: "alertmanager.j2"
     mode: 0644
 
+#######################################
 # override configuration
+#######################################
 - name: override grafana datasources
   template:
     dest: /srv/grafana/provisioning/datasources/all.yml
@@ -67,8 +112,9 @@
     src: "prometheus_main.j2"
     mode: 0644
 
-
+#######################################
 # start docker containers
+#######################################
 - name: Create Prometheus container
   docker_container:
     name: prometheus

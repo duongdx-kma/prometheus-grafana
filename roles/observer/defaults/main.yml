@@ -10,7 +10,3 @@ discord_webhook_url: https://discord.com/api/webhooks/1225033709535629312/Wm3arL
 telegraf_host:
   - "192.168.56.190:9273"
   - "192.168.56.191:9273"
-
-node_host:
-  - "192.168.56.190:9100"
-  - "192.168.56.191:9100"

@@ -18,7 +18,7 @@
 ###############################################################################
 [[outputs.prometheus_client]]
    ## Address to listen on
-   listen = ":9273"
+   listen = ":{{ port_expose_for_prometheus }}"
 
    ## Interval to expire metrics and not deliver to prometheus, 0 == no expiration
    # expiration_interval = "60s"

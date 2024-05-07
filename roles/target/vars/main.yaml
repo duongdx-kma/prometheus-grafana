@@ -1,2 +1,4 @@
 centos: "CentOS"
 ubuntu: "Ubuntu"
+telegraf_version: 1.29.4-1.x86_64
+port_expose_for_prometheus: 9273
