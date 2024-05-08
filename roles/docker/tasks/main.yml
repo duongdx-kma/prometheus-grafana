@@ -64,6 +64,12 @@
     state: started
     enabled: yes
 
+- name: Restart Docker service
+  service:
+    name: docker
+    state: restarted
+    enabled: yes
+
 - name: adding existing user '{{ ansible_user }}' to group docker
   user:
     name: '{{ ansible_user }}'
