@@ -25,7 +25,8 @@ scrape_configs:
       {% endfor %}
 
 rule_files:
-  - prometheus_alerts_rules.yml
+  - rules/prometheus_alerts_rules.yml
+  - rules/first_rule.yml
 
 alerting:
   alertmanagers:

@@ -1,0 +1,13 @@
+groups:
+  - name: my-rules
+    rules:
+      - record: job:cpu_usage_idle:avg_idle # job:cpu_usage_idle:avg_idle
+        expr:  avg without(host, instance)(100 - rate(cpu_usage_idle[1m])) # average idle time for all instances
+
+      - record: job:cpu_usage_system:avg_system_usages
+        expr:  avg without(host, instance)(100 - rate(cpu_usage_system[1m]))
+  
+  - name: my-rules-new
+    rules:
+      - record: job:cpu_usage_system:avg_system_usages_new
+        expr:  avg without(host, instance)(100 - rate(cpu_usage_system[1m]))

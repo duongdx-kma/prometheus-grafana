@@ -2,7 +2,7 @@
 #######################################
 # install and configure firewalld
 #######################################
-- name: instal 
+- name: install
   yum:
     name: firewalld
     state: present
@@ -73,16 +73,10 @@
     state: directory
 
 # tasks for passing configuation files to server
-- name: Create prometheus configuration file
+- name: passing prometheus rules folder to server
   copy:
-    dest: /srv/prometheus/prometheus.yml
-    src: "prometheus_main.yml"
-    mode: 0644
-
-- name: Create prometheus alert configuration file
-  copy:
-    dest: /srv/prometheus/prometheus_alerts_rules.yml
-    src: "prometheus_alerts_rules.yml"
+    src: prometheus/rules/
+    dest: /srv/prometheus/rules
     mode: 0644
 
 - name: Create grafana configuration files
@@ -122,7 +116,7 @@
     image: prom/prometheus:{{ prometheus_version }}
     volumes:
       - /srv/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
-      - /srv/prometheus/prometheus_alerts_rules.yml:/etc/prometheus/prometheus_alerts_rules.yml
+      - /srv/prometheus/rules:/etc/prometheus/rules
       - prometheus_main_data:/prometheus
     command: >
       --config.file=/etc/prometheus/prometheus.yml
@@ -130,6 +124,8 @@
       --web.console.libraries=/etc/prometheus/console_libraries
       --web.console.templates=/etc/prometheus/consoles
       --web.enable-lifecycle
+    env:
+      TZ: "Asia/Ho_Chi_Minh"
     published_ports: "9090:9090"
 
 - name: Create Grafana container
@@ -144,6 +140,7 @@
     env:
       GF_AUTH_ANONYMOUS_ENABLED: "true"
       GF_AUTH_ANONYMOUS_ORG_ROLE: "Admin"
+      TZ: "Asia/Ho_Chi_Minh"
     published_ports: "3000:3000"
 
 - name: Create Alertmanager container
@@ -157,4 +154,6 @@
     command: >
       --config.file=/config/alertmanager.yml 
       --log.level=debug
+    env:
+      TZ: "Asia/Ho_Chi_Minh"
     published_ports: "9093:9093"
