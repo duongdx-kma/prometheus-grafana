@@ -3,13 +3,13 @@
 prometheus_version: v2.45.3
 grafana_version: "10.1.9"
 alertmanager_version: v0.27.0
-alertmanagers_endpoint: 192.168.56.198:9093
-prometheus_endpoint: http://192.168.56.198:9090
+alertmanagers_endpoint: 192.168.56.88:9093
+prometheus_endpoint: http://192.168.56.88:9090
 discord_webhook_url: https://discord.com/api/webhooks/1225033709535629312/Wm3arL0m8V28Bq45ktFDg6Jnm8enfE0VFj2RVyxaDliGn4lZZZeHusPWXA8PMaw4LZqW
 
 telegraf_host:
-  - "192.168.56.190:9273"
-  - "192.168.56.191:9273"
+  - "192.168.56.90:9273"
+  - "192.168.56.91:9273"
 
 program_host:
   - "192.168.56.1:8001"

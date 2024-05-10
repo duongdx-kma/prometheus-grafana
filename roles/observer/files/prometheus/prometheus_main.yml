@@ -11,12 +11,12 @@ scrape_configs:
   - job_name: telegraf
     metrics_path: /metrics
     static_configs:
-    - targets: ["192.168.56.190:9273", "192.168.56.191:9273"]
+    - targets: ["192.168.56.90:9273", "192.168.56.91:9273"]
   
   - job_name: program
     metrics_path: /
     static_configs:
-    - targets: ["192.168.56.190:8001", "192.168.56.191:8001"]
+    - targets: ["192.168.56.90:8001", "192.168.56.91:8001"]
 
 rule_files:
   - rules/prometheus_alerts_rules.yml

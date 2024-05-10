@@ -14,6 +14,7 @@ Vagrant.configure("2") do |config|
         # vb.memory = 512
         # vb.cpus = 0.5
       end
+      node.vm.synced_folder "roles/observer/files/prometheus/rules", "/srv/prometheus/rules", :mount_options => ["dmode=777", "fmode=666"]
       node.vm.hostname = "observer"
       node.vm.network :private_network, ip: "192.168.56.88"
       node.vm.network "forwarded_port", guest: 22, host: 12798

@@ -6,8 +6,29 @@ groups:
 
       - record: job:cpu_usage_system:avg_system_usages
         expr:  avg without(host, instance)(100 - rate(cpu_usage_system[1m]))
-  
+
   - name: my-rules-new
     rules:
       - record: job:cpu_usage_system:avg_system_usages_new
         expr:  avg without(host, instance)(100 - rate(cpu_usage_system[1m]))
+
+  - name: AlertAllInstances
+    rules:
+      - alert: CUP_utilities_exceeded
+        expr: avg by (instance, host, job) (100 - cpu_usage_idle - cpu_usage_steal) >= 50
+        for: 1m # when define for clause -> when statement be exceeded the alert will be move to pending state first -> then prometheus will firing the alert
+
+      - record: job:app_latency_seconds:rate1m
+        expr: rate(app_response_latency_seconds_sum[1m]) / rate(app_response_latency_seconds_count[1m])
+
+      - alert: AppLatencyAbove5seconds
+        expr: job:app_latency_seconds:rate1m >= 5
+        for: 2m
+        labels:
+          severity: critical
+      
+      - alert: AppLatencyAbove2SecondsAndBellow5Seconds
+        expr: 2 < job:app_latency_seconds:rate1m < 5
+        for: 2m
+        labels:
+          severity: warning
