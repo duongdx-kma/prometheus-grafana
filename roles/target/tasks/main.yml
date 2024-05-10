@@ -7,7 +7,7 @@
     name: firewalld
     state: present
     update_cache: yes
-  when: ansible_distribution == "{{ centos }}"
+  when: ansible_distribution == "CentOS"
 
 - name: start firewalld
   service:
@@ -31,13 +31,13 @@
     url: "https://dl.influxdata.com/telegraf/releases/telegraf-{{ telegraf_version }}.rpm"
     dest: "/tmp/telegraf-{{ telegraf_version }}.rpm"
     mode: 0755
-  when: ansible_distribution == "{{ centos }}"
+  when: ansible_distribution == "CentOS"
 
 - name: install telegraf
   yum:
    name: "/tmp/telegraf-{{ telegraf_version }}.rpm"
    state: present
-  when: ansible_distribution == "{{ centos }}"
+  when: ansible_distribution == "CentOS"
 
 - name: passing telegraf configuration file
   template:
