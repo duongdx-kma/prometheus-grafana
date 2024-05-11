@@ -6,9 +6,23 @@ global:
   smtp_auth_password: {{ auth_password }}
 
 route:
-  group_wait: 30s
-  group_interval: 5m
-  repeat_interval: 5m
+  group_wait: 30s # alertmanager need wait and aggregate more data then send to receiver. alertmanager will see if more alter to receiver group then aggregate -> send to receiver
+  group_interval: 5m # 300s
+  # for example: group_wait and group_interval
+  # t = 0s   => alert firing { x='a' }
+  # t = 15s  => alert firing { x='b' }  => within 30s
+  # t = 30s  => { x='a' } and { x='b' } => (done group_wait) => send to receiver group
+  # t = 100s => alert firing { x='c' }
+  # t = 150s => alert firing { x='d' }
+  # t = 330s => { x='a' }, { x='b' }, { x='c' } and { x='d' } => (done group_interval + group_wait) => send to receiver group
+  # t = 450s => alert firing { x='e' } 
+  # t = 500s => RESOLVED { x='a' }, { x='c' }
+  # t = 630s => { x='b' }, { x='d' } and { x='e' } => send to receiver group
+  # t = 930s => if no new alert come in => no notifications is sent => Then repeat_interval come in 🔔
+
+  # t = 930 => repeat_interval 🔔
+  # t = 1230 => repeat_interval 🔔
+  repeat_interval: 5m # when no have new alert to receiver group => 
   receiver: discord_general_channel
   routes:
     # devops team
@@ -16,6 +30,7 @@ route:
         type: (instance|linux|window|aws|gcp|azure)
       receiver: devops_team_discord_channel
       continue: true
+      group_by: [category]
       # fallback receiver
       routes:
       - receiver: devops_team_discord_channel
@@ -31,6 +46,7 @@ route:
         type: (application|python|go|php|nodejs)
       receiver: python_team_discord_channel
       continue: true
+      group_by: [category]
       # fallback receiver
       routes:
       - receiver: python_team_discord_channel

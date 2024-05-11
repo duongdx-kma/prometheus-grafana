@@ -100,6 +100,6 @@ groups:
           title: 'Instance Disk usage is running out'
           description: "The instance's disk ({{ $labels.instance }}) going to full. Current free disk is {{ $value }}%"
         labels:
-          severity: warning
+          severity: error
           type: instance
           category: disk

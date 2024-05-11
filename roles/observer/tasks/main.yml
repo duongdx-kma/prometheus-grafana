@@ -154,6 +154,8 @@
     command: >
       --config.file=/config/alertmanager.yml 
       --log.level=debug
+      --web.external-url="http://{{ ansible_host }}:9093"
     env:
       TZ: "Asia/Ho_Chi_Minh"
     published_ports: "9093:9093"
+# --web.external-url="http://{{ ansible_host }}:9093": define altermanger url
