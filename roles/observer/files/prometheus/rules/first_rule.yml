@@ -2,7 +2,7 @@ groups:
   - name: my-rules
     rules:
       - record: job:cpu_usage_idle:avg_idle # job:cpu_usage_idle:avg_idle
-        expr:  avg without(host, instance)(100 - rate(cpu_usage_idle[1m])) # average idle time for all instances
+        expr:  avg without(host, instance)(100 - irate(cpu_usage_idle[1m])) # average idle time for all instances
 
       - record: job:cpu_usage_system:avg_system_usages
         expr:  avg without(host, instance)(100 - rate(cpu_usage_system[1m]))
@@ -26,7 +26,11 @@ groups:
         for: 2m
         labels:
           severity: critical
-      
+        annotations:
+          title: 'Program app latency is over 5 seconds'
+          description: 'app latency of instance {{ $labels.instance }} of job {{ $labels.job }} is {{ $value }} for more than  5 minutes'
+          app_link: 'http://localhost:8000'
+    
       - alert: AppLatencyAbove2SecondsAndBellow5Seconds
         expr: 2 < job:app_latency_seconds:rate1m < 5
         for: 2m

@@ -12,3 +12,14 @@
 
 - ##### Prometheus running as docker container:
 > docker kill -s SIGHUP prometheus
+
+
+<h3>Note for alert manager</h3>
+https://www.pluralsight.com/cloud-guru/labs/aws/installing-prometheus-alertmanager
+
+- ##### testing rules for correct syntax
+> install amtool
+> amtool check-config config_file.yml
+
+- ##### Prometheus running as docker container:
+> docker kill -s SIGHUP alertmanager

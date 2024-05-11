@@ -19,8 +19,9 @@ scrape_configs:
     - targets: ["192.168.56.90:8001", "192.168.56.91:8001"]
 
 rule_files:
-  - rules/prometheus_alerts_rules.yml
-  - rules/first_rule.yml
+  #- rules/prometheus_alerts_rules.yml
+  - rules/instance-rules.yml
+  - rules/application-rules.yml
 
 alerting:
   alertmanagers:

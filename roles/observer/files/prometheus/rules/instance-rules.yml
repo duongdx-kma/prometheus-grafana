@@ -1,0 +1,105 @@
+groups:
+  - name: instance-rules
+    rules:
+      - record: job:cpu_utilities_percentage:avg_used
+        expr: avg without(host, instance) (100 - avg_over_time(cpu_usage_idle[1m]) - avg_over_time(cpu_usage_steal[1m]))
+
+      - record: job:memory_utilities_percentage:avg_really_available
+        expr: (mem_free + mem_buffered + mem_cached) / mem_total * 100
+
+      - record: job:disk_utilities_percentage:disk_sdav1_available
+        expr: (disk_free{device="sda1"} / disk_total{device="sda1"}) * 100
+  
+  - name: instance-alerts
+    rules:
+      # Instance Down alert:
+      - alert: InstanceDown
+        expr: up == 0
+        for: 1m
+        annotations:
+          title: "Instance {{ $labels.instance }} down"
+          description: '{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 1 minute.'
+        labels:
+          severity: critical
+          type: instance
+          category: server
+
+      # CPU alert:
+      - alert: CUP_usage_above_50percent
+        expr: 50 < job:cpu_utilities_percentage:avg_used < 75
+        for: 1m # when define for clause -> when statement be exceeded the alert will be move to pending state first -> then prometheus will firing the alert
+        annotations:
+          title: 'Instance CPU usage is going high'
+          description: 'The CPU for instance {{ $labels.instance }} of job {{ $labels.job }} have reached {{ $value }}%'
+        labels:
+          severity: warning
+          type: instance
+          category: cpu
+
+      - alert: CUP_usage_above_75percent
+        expr: job:cpu_utilities_percentage:avg_used >= 75
+        for: 1m # when define for clause -> when statement be exceeded the alert will be move to pending state first -> then prometheus will firing the alert
+        annotations:
+          title: 'Instance CPU usage is very HIGH'
+          description: 'Emergency: The CPU for instance {{ $labels.instance }} of job {{ $labels.job }} have reached {{ $value }}%'
+        labels:
+          severity: critical
+          type: instance
+          category: cpu
+
+      - alert: CUP_usage_above_85percent
+        expr: job:cpu_utilities_percentage:avg_used > 85
+        for: 1m # when define for clause -> when statement be exceeded the alert will be move to pending state first -> then prometheus will firing the alert
+        annotations:
+          title: 'Instance CPU usage is very HIGH'
+          description: 'ERROR: The CPU for instance {{ $labels.instance }} of job {{ $labels.job }} have reached {{ $value }}%'
+        labels:
+          severity: error
+          type: instance
+          category: cpu
+
+      # Memory alert:
+      - alert: memory_usage_above_50percent
+        expr: 50 < 100 - job:memory_utilities_percentage:avg_really_available < 75
+        for: 1m # when define for clause -> when statement be exceeded the alert will be move to pending state first -> then prometheus will firing the alert
+        annotations:
+          title: 'Instance Memory usage is going high'
+          description: 'The Memory for instance {{ $labels.instance }} of job {{ $labels.job }} have reached {{ $value }}%'
+        labels:
+          severity: warning
+          type: instance
+          category: memory
+
+      - alert: memory_usage_above_75percent
+        expr: 100 - job:memory_utilities_percentage:avg_really_available > 75
+        for: 1m # when define for clause -> when statement be exceeded the alert will be move to pending state first -> then prometheus will firing the alert
+        annotations:
+          title: 'Instance Memory usage is very HIGH'
+          description: 'Emergency: The Memory for instance {{ $labels.instance }} of job {{ $labels.job }} have reached {{ $value }}%'
+        labels:
+          severity: critical
+          type: instance
+          category: memory
+
+      - alert: memory_usage_above_85percent
+        expr: 100 - job:memory_utilities_percentage:avg_really_available > 85
+        for: 1m # when define for clause -> when statement be exceeded the alert will be move to pending state first -> then prometheus will firing the alert
+        annotations:
+          title: 'Instance Memory usage is HIGH'
+          description: 'ERROR: The Memory for instance {{ $labels.instance }} of job {{ $labels.job }} have reached {{ $value }}%'
+        labels:
+          severity: error
+          type: instance
+          category: disk
+
+      # Disk alert:
+      - alert: Instance_disk_free_space_less_30percent
+        expr: job:disk_utilities_percentage:disk_sdav1_available < 30
+        for: 1m # when define for clause -> when statement be exceeded the alert will be move to pending state first -> then prometheus will firing the alert
+        annotations:
+          title: 'Instance Disk usage is running out'
+          description: "The instance's disk ({{ $labels.instance }}) going to full. Current free disk is {{ $value }}%"
+        labels:
+          severity: warning
+          type: instance
+          category: disk
