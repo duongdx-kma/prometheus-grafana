@@ -23,7 +23,91 @@ scrape_configs:
       {% for item in program_host %}
       - {{ item }}
       {% endfor %}
+      
+  - job_name: blackbox_exporter
+    static_configs:
+    - targets:
+      {% for item in blackbox_exporter_hosts %}
+      - {{ item }}
+      {% endfor %}
 
+  - job_name: my_website
+    static_configs:
+    - targets:
+      - https://prometheus.io
+      - duongdx.com
+      - https://viblo.asia
+    metrics_path: /probe
+    params:
+      mode: 
+        - http_2xx
+    # config blackblox scrape data instead prometheus sever:
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: {{ blackbox_exporter_hosts[0] }}
+
+  - job_name: my_prom_cluster
+    static_configs:
+    - targets:
+      - 192.168.56.88
+      - 192.168.56.90
+      - 192.168.56.91
+    metrics_path: /probe
+    params:
+      module: [icmp_custom] 
+    # config blackblox scrape data instead prometheus sever:
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: {{ blackbox_exporter_hosts[0] }}
+
+  - job_name: multiple_dns_query
+    static_configs:
+      - targets:
+          # facebook.com
+          - facebook.com:8.8.8.8
+          - facebook.com:1.1.1.1
+          - facebook.com:127.0.0.1
+          # imdb.com:
+          - imdb.com:8.8.8.8
+          - imdb.com:1.1.1.1
+          - imdb.com:127.0.0.1
+          # duongdx.com:
+          - duongdx.com:8.8.8.8
+          - duongdx.com:1.1.1.1
+          - duongdx.com:127.0.0.1
+    metrics_path: /probe
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - source_labels: [__param_target]
+        regex: '(.*):.*$'
+        replacement: '$1'
+        target_label: 'domain'
+      - source_labels: [__param_target]
+        regex: '.*:(.*)$'
+        replacement: '$1'
+        target_label: 'instance'
+      - source_labels: [__param_target]
+        regex: '(.*):.*$'
+        replacement: '$1'
+        target_label: __param_module
+      - source_labels: [__param_target]
+        regex: '.*:(.*)$'
+        replacement: '$1'
+        target_label: __param_target
+      - target_label: __address__
+        replacement: {{ blackbox_exporter_hosts[0] }}  # The blackbox exporter's real hostname:port.
+    
 rule_files:
   #- rules/prometheus_alerts_rules.yml
   - rules/instance-rules.yml

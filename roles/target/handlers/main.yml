@@ -11,3 +11,17 @@
     name: firewalld
     state: restarted
     daemon_reload: yes
+
+- name: restart blackbox exporter
+  become: true
+  systemd:
+    daemon_reload: true
+    name: blackbox
+    state: restarted
+    enabled: yes
+
+- name: reload blackbox exporter
+  become: true
+  systemd:
+    name: blackbox
+    state: reloaded

@@ -1,4 +1,8 @@
 centos: "CentOS"
 ubuntu: "Ubuntu"
 telegraf_version: 1.29.4-1.x86_64
+architecture: amd64
+blackbox_exporter_version: 0.24.0
+blackbox_exporter_port: 9115
+
 port_expose_for_prometheus: 9273
