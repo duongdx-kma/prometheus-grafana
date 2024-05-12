@@ -102,6 +102,12 @@
 
 - name: override prometheus configuration
   template:
+    src: "file_sd.j2"
+    dest: /srv/prometheus/file_sd.yml
+    mode: 0644
+
+- name: override prometheus configuration
+  template:
     dest: /srv/prometheus/prometheus.yml
     src: "prometheus_main.j2"
     mode: 0644
@@ -114,8 +120,10 @@
     name: prometheus
     restart_policy: always
     image: prom/prometheus:{{ prometheus_version }}
+    restart: true # restart container
     volumes:
       - /srv/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - /srv/prometheus/file_sd.yml:/etc/prometheus/file_sd.yml
       - /srv/prometheus/rules:/etc/prometheus/rules
       - prometheus_main_data:/prometheus
     command: >
@@ -133,6 +141,7 @@
     name: grafana
     restart_policy: always
     image: grafana/grafana:{{ grafana_version}}
+    restart: true # restart container
     volumes:
       - grafana-data:/var/lib/grafana
       - /srv/grafana/provisioning:/etc/grafana/provisioning
@@ -148,6 +157,7 @@
     name: alertmanager
     restart_policy: always
     image: prom/alertmanager:{{ alertmanager_version }}
+    restart: true # restart container
     volumes:
       - alertmanager-data:/data
       - /srv/alertmanager:/config

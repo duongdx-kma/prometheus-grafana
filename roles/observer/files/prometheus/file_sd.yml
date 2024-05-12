@@ -1,0 +1,7 @@
+- targets:
+    - 192.168.56.90:9273
+    - 192.168.56.91:9273
+  labels:
+    server_type: centos
+    region: HaNoi
+    environment: development

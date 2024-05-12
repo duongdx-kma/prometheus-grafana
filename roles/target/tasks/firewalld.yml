@@ -1,0 +1,41 @@
+#######################################
+# install and configure firewalld 
+#######################################
+---
+- name: instal 
+  yum:
+    name: firewalld
+    state: present
+    update_cache: yes
+  when: ansible_distribution == "CentOS"
+
+- name: start firewalld
+  service:
+    name: firewalld
+    state: started
+    enabled: yes
+
+- name: expose {{ port_expose_for_prometheus }}/tcp for prometheus pulling metrics
+  firewalld:
+    zone: public
+    port: "{{ port_expose_for_prometheus }}/tcp"
+    permanent: true
+    state: enabled
+  notify: restart firewalld
+
+- name: expose {{ blackbox_exporter_port }}/tcp for blackbox_exporter
+  firewalld:
+    zone: public
+    port: "{{ blackbox_exporter_port }}/tcp"
+    permanent: true
+    state: enabled
+  notify: restart firewalld
+
+
+- name: expose {{ pushgateway_port }}/tcp for pushgateway
+  firewalld:
+    zone: public
+    port: "{{ pushgateway_port }}/tcp"
+    permanent: true
+    state: enabled
+  notify: restart firewalld
