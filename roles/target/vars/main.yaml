@@ -5,4 +5,7 @@ architecture: amd64
 blackbox_exporter_version: 0.24.0
 blackbox_exporter_port: 9115
 
+pushgateway_version: 1.7.0
+pushgateway_port: 9091
+
 port_expose_for_prometheus: 9273

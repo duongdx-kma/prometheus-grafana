@@ -1,0 +1,29 @@
+#######################################
+# install telegraf on host machine
+#######################################
+---
+- name: download rpm packages
+  get_url:
+    url: "https://dl.influxdata.com/telegraf/releases/telegraf-{{ telegraf_version }}.rpm"
+    dest: "/tmp/telegraf-{{ telegraf_version }}.rpm"
+    mode: 0755
+  when: ansible_distribution == "CentOS"
+
+- name: install telegraf
+  yum:
+   name: "/tmp/telegraf-{{ telegraf_version }}.rpm"
+   state: present
+  when: ansible_distribution == "CentOS"
+
+- name: passing telegraf configuration file
+  template:
+    src: telegraf.conf.j2
+    dest: /etc/telegraf/telegraf.conf
+    mode: 0644
+
+- name: started telegraf
+  service:
+    name: telegraf
+    state: started
+    enabled: yes
+  notify: restart telegraf-slave
