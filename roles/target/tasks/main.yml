@@ -1,22 +1,43 @@
 ---
-# tasks file for telegraf-slave
-- name: confige telegraf
-  shell: |
-    cat <<EOF | sudo tee /etc/yum.repos.d/influxdb.repo
-    [influxdb]
-    name = InfluxData Repository - Stable
-    baseurl = https://repos.influxdata.com/stable/\$basearch/main
-    enabled = 1
-    gpgcheck = 1
-    gpgkey = https://repos.influxdata.com/influxdata-archive_compat.key
-    EOF
-  when: ansible_distribution == "{{ centos }}"
+#######################################
+# install and configure firewalld 
+#######################################
+- name: instal 
+  yum:
+    name: firewalld
+    state: present
+    update_cache: yes
+  when: ansible_distribution == "CentOS"
+
+- name: start firewalld
+  service:
+    name: firewalld
+    state: started
+    enabled: yes
+
+- name: expose {{ port_expose_for_prometheus }}/tcp for prometheus pulling metrics
+  firewalld:
+    zone: public
+    port: "{{ port_expose_for_prometheus }}/tcp"
+    permanent: true
+    state: enabled
+  notify: restart firewalld
+
+#######################################
+# install telegraf on host machine
+#######################################
+- name: download rpm packages
+  get_url:
+    url: "https://dl.influxdata.com/telegraf/releases/telegraf-{{ telegraf_version }}.rpm"
+    dest: "/tmp/telegraf-{{ telegraf_version }}.rpm"
+    mode: 0755
+  when: ansible_distribution == "CentOS"
 
 - name: install telegraf
   yum:
-   name: telegraf
+   name: "/tmp/telegraf-{{ telegraf_version }}.rpm"
    state: present
-  when: ansible_distribution == "{{ centos }}"
+  when: ansible_distribution == "CentOS"
 
 - name: passing telegraf configuration file
   template:

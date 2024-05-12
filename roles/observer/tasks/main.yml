@@ -1,5 +1,47 @@
 ---
+#######################################
+# install and configure firewalld
+#######################################
+- name: install
+  yum:
+    name: firewalld
+    state: present
+    update_cache: yes
+  when: ansible_distribution == "CentOS"
+
+- name: start firewalld
+  service:
+    name: firewalld
+    state: started
+    enabled: yes
+
+- name: expose prometheus port
+  firewalld:
+    zone: public
+    port: "9090/tcp"
+    permanent: true
+    state: enabled
+  notify: restart firewalld
+
+- name: expose grafana port
+  firewalld:
+    zone: public
+    port: "3000/tcp"
+    permanent: true
+    state: enabled
+  notify: restart firewalld
+
+- name: expose alertmanager port
+  firewalld:
+    zone: public
+    port: "9093/tcp"
+    permanent: true
+    state: enabled
+  notify: restart firewalld
+
+#######################################
 # install and update pip
+#######################################
 - name: Update YUM cache
   yum:
     name: '*'
@@ -9,8 +51,9 @@
   yum:
     name: python-docker
     state: present
-
+#######################################
 # tasks file for observer
+#######################################
 - name: Create Folder /srv/prometheus if not exist
   file:
     path: /srv/prometheus
@@ -30,16 +73,10 @@
     state: directory
 
 # tasks for passing configuation files to server
-- name: Create prometheus configuration file
+- name: passing prometheus rules folder to server
   copy:
-    dest: /srv/prometheus/prometheus.yml
-    src: "prometheus_main.yml"
-    mode: 0644
-
-- name: Create prometheus alert configuration file
-  copy:
-    dest: /srv/prometheus/prometheus_alerts_rules.yml
-    src: "prometheus_alerts_rules.yml"
+    src: prometheus/rules/
+    dest: /srv/prometheus/rules
     mode: 0644
 
 - name: Create grafana configuration files
@@ -54,7 +91,9 @@
     src: "alertmanager.j2"
     mode: 0644
 
+#######################################
 # override configuration
+#######################################
 - name: override grafana datasources
   template:
     dest: /srv/grafana/provisioning/datasources/all.yml
@@ -67,8 +106,9 @@
     src: "prometheus_main.j2"
     mode: 0644
 
-
+#######################################
 # start docker containers
+#######################################
 - name: Create Prometheus container
   docker_container:
     name: prometheus
@@ -76,7 +116,7 @@
     image: prom/prometheus:{{ prometheus_version }}
     volumes:
       - /srv/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
-      - /srv/prometheus/prometheus_alerts_rules.yml:/etc/prometheus/prometheus_alerts_rules.yml
+      - /srv/prometheus/rules:/etc/prometheus/rules
       - prometheus_main_data:/prometheus
     command: >
       --config.file=/etc/prometheus/prometheus.yml
@@ -84,6 +124,8 @@
       --web.console.libraries=/etc/prometheus/console_libraries
       --web.console.templates=/etc/prometheus/consoles
       --web.enable-lifecycle
+    env:
+      TZ: "Asia/Ho_Chi_Minh"
     published_ports: "9090:9090"
 
 - name: Create Grafana container
@@ -98,6 +140,7 @@
     env:
       GF_AUTH_ANONYMOUS_ENABLED: "true"
       GF_AUTH_ANONYMOUS_ORG_ROLE: "Admin"
+      TZ: "Asia/Ho_Chi_Minh"
     published_ports: "3000:3000"
 
 - name: Create Alertmanager container
@@ -111,4 +154,8 @@
     command: >
       --config.file=/config/alertmanager.yml 
       --log.level=debug
+      --web.external-url="http://{{ ansible_host }}:9093"
+    env:
+      TZ: "Asia/Ho_Chi_Minh"
     published_ports: "9093:9093"
+# --web.external-url="http://{{ ansible_host }}:9093": define altermanger url

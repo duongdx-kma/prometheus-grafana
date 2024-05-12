@@ -8,7 +8,7 @@
       - git
       - vim
     state: present
-  when: ansible_distribution == "{{ centos }}"
+  when: ansible_distribution == "CentOS"
 
 # Start docker configuration
 - name: Remove docker if installed from CentOS repo
@@ -23,13 +23,13 @@
       - docker-logrotate
       - docker-engine
     state: absent
-  when: ansible_distribution == "{{ centos }}"
+  when: ansible_distribution == "CentOS"
 
 - name: Add Docker repo
   get_url:
     url: https://download.docker.com/linux/centos/docker-ce.repo
     dest: /etc/yum.repos.d/docer-ce.repo
-  when: ansible_distribution == "{{ centos }}"
+  when: ansible_distribution == "CentOS"
 
 - name: Enable Docker Edge repo
   ini_file:
@@ -37,7 +37,7 @@
     section: 'docker-ce-edge'
     option: enabled
     value: 0
-  when: ansible_distribution == "{{ centos }}"
+  when: ansible_distribution == "CentOS"
 
 - name: Enable Docker Test repo
   ini_file:
@@ -45,7 +45,7 @@
     section: 'docker-ce-test'
     option: enabled
     value: 0
-  when: ansible_distribution == "{{ centos }}"
+  when: ansible_distribution == "CentOS"
 
 - name: Install package
   yum:
@@ -56,12 +56,18 @@
       - docker-buildx-plugin
       - docker-compose-plugin
     state: present
-  when: ansible_distribution == "{{ centos }}"
+  when: ansible_distribution == "CentOS"
 
 - name: Start Docker service
   service:
     name: docker
     state: started
+    enabled: yes
+
+- name: Restart Docker service
+  service:
+    name: docker
+    state: restarted
     enabled: yes
 
 - name: adding existing user '{{ ansible_user }}' to group docker

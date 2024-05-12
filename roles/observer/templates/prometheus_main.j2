@@ -15,17 +15,19 @@ scrape_configs:
       {% for item in telegraf_host %}
       - {{ item }}
       {% endfor %}
-  
-  - job_name: node
-    metrics_path: /metrics
+
+  - job_name: program
+    metrics_path: /
     static_configs:
-    - targets:
-      {% for item in node_host %}
+    - targets: 
+      {% for item in program_host %}
       - {{ item }}
       {% endfor %}
 
 rule_files:
-  - prometheus_alerts_rules.yml
+  #- rules/prometheus_alerts_rules.yml
+  - rules/instance-rules.yml
+  - rules/application-rules.yml
 
 alerting:
   alertmanagers:

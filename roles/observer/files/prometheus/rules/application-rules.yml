@@ -1,0 +1,43 @@
+groups:
+  - name: program-rules
+    rules:
+      - record: job:app_latency_seconds:rate1m
+        expr: rate(app_response_latency_seconds_sum[1m]) / rate(app_response_latency_seconds_count[1m])
+         
+  - name: AlertAllInstances
+    rules:
+      - alert: App_Latency_Above_2Seconds_And_Bellow_5Seconds
+        expr: 2 < job:app_latency_seconds:rate1m < 5
+        for: 2m
+        annotations:
+          title: 'Program app latency is going slow'
+          description: 'app latency of instance {{ $labels.instance }} of job {{ $labels.job }} is {{ $value }} for more than  5 minutes'
+          app_link: 'http://localhost:8000'
+        labels:
+          severity: warning
+          type: application
+          category: python
+
+      - alert: App_Latency_Above_5seconds
+        expr: job:app_latency_seconds:rate1m >= 5
+        for: 2m
+        annotations:
+          title: 'Program app latency is over 5 seconds'
+          description: 'app latency of instance {{ $labels.instance }} of job {{ $labels.job }} is {{ $value }} for more than  5 minutes'
+          app_link: 'http://localhost:8000'
+        labels:
+          severity: critical
+          type: application
+          category: python
+
+      - alert: App_Latency_Above_8seconds
+        expr: job:app_latency_seconds:rate1m >= 8
+        for: 2m
+        annotations:
+          title: 'Program app latency is over 8 seconds'
+          description: 'ERROR: app latency of instance {{ $labels.instance }} of job {{ $labels.job }} is {{ $value }} for more than  5 minutes'
+          app_link: 'http://localhost:8000'
+        labels:
+          severity: error
+          type: application
+          category: python
