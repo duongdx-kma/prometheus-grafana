@@ -1,1 +1,8 @@
 ---
+- include_tasks: mysql.yml
+  tags:
+    - install mysql
+
+- include_tasks: mysqld_exporter.yml
+  tags:
+    - install mysqld_exporter

@@ -22,8 +22,8 @@
     msg: "https://github.com/prometheus/mysqld_exporter/releases/download/v{{ mysqld_exporter_version }}/mysqld_exporter-{{ mysqld_exporter_version }}.linux-{{ architecture }}.tar.gz"
 
 - name: install mysql-exporter
-  unarchive:
-    url: "https://github.com/prometheus/mysqld_exporter/releases/download/v{{ mysqld_exporter_version }}/mysqld_exporter-{{ mysqld_exporter_version }}.linux-{{ architecture }}.tar.gz"
+  ansible.builtin.unarchive:
+    src: "https://github.com/prometheus/mysqld_exporter/releases/download/v{{ mysqld_exporter_version }}/mysqld_exporter-{{ mysqld_exporter_version }}.linux-{{ architecture }}.tar.gz"
     dest: "/tmp"
     creates: "/tmp/mysqld_exporter-{{ mysqld_exporter_version }}.linux-{{ architecture }}/mysqld_exporter"
     remote_src: yes
@@ -64,3 +64,11 @@
     name: mysqld_exporter
     state: restarted
     enabled: yes
+
+- name: expose {{ mysqld_exporter_port }}/tcp for mysqld_exporter
+  firewalld:
+    zone: public
+    port: "{{ mysqld_exporter_port }}/tcp"
+    permanent: true
+    state: enabled
+  notify: restart firewalld

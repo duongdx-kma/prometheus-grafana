@@ -6,7 +6,6 @@ alertmanager_version: v0.27.0
 alertmanagers_endpoint: 192.168.56.88:9093
 prometheus_endpoint: http://192.168.56.88:9090
 
-
 telegraf_host:
   - host: "192.168.56.90:9273"
     team: devops
@@ -42,3 +41,6 @@ pushgateway_hosts:
 
 program_host:
   - "192.168.56.1:8001"
+
+mysqld_exporter_hosts:
+  - "192.168.56.90:9104"
