@@ -1,0 +1,4 @@
+---
+# vars file for mysql
+architecture: amd64
+mysqld_exporter_version: 0.15.1

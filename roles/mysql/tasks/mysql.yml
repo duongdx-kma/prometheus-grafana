@@ -1,0 +1,37 @@
+# tasks file for mysql
+- name: Download sources
+  get_url:
+    url: https://repo.mysql.com//mysql80-community-release-el7-5.noarch.rpm
+    dest: /opt/mysql
+
+- name: Install package
+  yum:
+    name: /opt/mysql/mysql80-community-release-el7-5.noarch.rpm
+    state: present
+
+- name: Install MySQL
+  yum: 
+    name: mysqld
+    state: installed
+
+- name: start and enabled mysqld
+  service:
+    name: mysqld
+    state: started
+    enabled: true
+
+# get default root password
+# cat /var/log/mysql.log | grep password
+# update new root password
+# SET PASSWORD FOR 'root'@'localhost' = PASSWORD('mypass');
+# FLUSH PRIVILEGES;
+
+- name: get root password
+  command: |
+    cat /var/log/mysql.log | grep password
+  register: mysql_password
+
+- name: debug root password
+  debug:
+    msg: "{{ mysql_password }}"
+

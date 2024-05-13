@@ -1,4 +1,4 @@
-- name: provision server
+- name: provision observer server
   hosts: observer_servers
   become: yes
   tags:
@@ -7,10 +7,18 @@
     - docker
     - observer
 
-- name: provision telegraf slave
+- name: provision slave servers
   hosts: slave_servers
   become: yes
   tags:
     - slave_servers
   roles:
     - target 
+
+- name: provision mysql servers and config
+  hosts: slave01
+  become: yes
+  tags:
+    - mysql_servers
+  roles:
+    - mysql
