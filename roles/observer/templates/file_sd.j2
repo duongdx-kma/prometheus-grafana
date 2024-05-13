@@ -1,9 +1,13 @@
+{% for item in telegraf_host %}
 - targets:
-    {% for item in telegraf_host %}
-    - {{ item }}
-    {% endfor %}
+    - {{ item.host }}
 
   labels:
+    team: {{ item.team }}
+    active: {{ item.active }}
+
     server_type: centos
     region: HaNoi
     environment: development
+
+{% endfor %}
