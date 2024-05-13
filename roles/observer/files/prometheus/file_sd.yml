@@ -1,7 +1,53 @@
 - targets:
     - 192.168.56.90:9273
+  labels:
+    active: true
+    team: devops
+    server_type: centos
+    region: HaNoi
+    environment: development
+
+- targets:
     - 192.168.56.91:9273
   labels:
+    active: true
+    team: sys-admin
+    server_type: centos
+    region: HaNoi
+    environment: development
+
+- targets:
+    - 192.168.56.92:9273
+  labels:
+    active: false
+    team: sys-admin
+    server_type: centos
+    region: HaNoi
+    environment: development
+
+- targets:
+    - 192.168.56.93:9273
+  labels:
+    active: false
+    team: sys-admin
+    server_type: centos
+    region: HaNoi
+    environment: development
+
+- targets:
+    - 192.168.56.94:9273
+  labels:
+    active: false
+    team: sys-admin
+    server_type: centos
+    region: HaNoi
+    environment: development
+
+- targets:
+    - 192.168.56.95:9273
+  labels:
+    active: false
+    team: sys-admin
     server_type: centos
     region: HaNoi
     environment: development

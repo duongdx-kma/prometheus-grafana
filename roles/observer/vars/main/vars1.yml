@@ -8,8 +8,29 @@ prometheus_endpoint: http://192.168.56.88:9090
 
 
 telegraf_host:
-  - "192.168.56.90:9273"
-  - "192.168.56.91:9273"
+  - host: "192.168.56.90:9273"
+    team: devops
+    active: "true"
+
+  - host: "192.168.56.91:9273"
+    team: sys-admin
+    active: "true"
+
+  - host: "192.168.56.92:9273"
+    team: sys-admin
+    active: "false"
+
+  - host: "192.168.56.93:9273"
+    team: sys-admin
+    active: "false"
+
+  - host: "192.168.56.94:9273"
+    team: sys-admin
+    active: "false"
+
+  - host: "192.168.56.95:9273"
+    team: sys-admin
+    active: "false"
 
 blackbox_exporter_hosts:
   - "192.168.56.90:9115"
