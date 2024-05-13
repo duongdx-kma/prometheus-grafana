@@ -1,5 +1,7 @@
-#https://github.com/prometheus/mysqld_exporter/releases/download/v0.15.1/mysqld_exporter-0.15.1.linux-amd64.tar.gz
-# create mysql exporter
+# install guide:
+# https://www.devopsschool.com/blog/install-and-configure-prometheus-mysql-exporter/
+
+# create mysqld exporter
 - name: create mysqld_exporter system group
   group:
     name: mysqld_exporter
@@ -14,6 +16,7 @@
     group: mysqld_exporter
     createhome: false
 
+# https://github.com/prometheus/mysqld_exporter/releases/download/v0.15.1/mysqld_exporter-0.15.1.linux-amd64.tar.gz
 - name: debug mysqld_exporter url
   debug:
     msg: "https://github.com/prometheus/mysqld_exporter/releases/download/v{{ mysqld_exporter_version }}/mysqld_exporter-{{ mysqld_exporter_version }}.linux-{{ architecture }}.tar.gz"
