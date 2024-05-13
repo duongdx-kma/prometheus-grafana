@@ -5,7 +5,9 @@
 
 - ##### ansible-vault: generate private data with exist file: 'unencrypted stuff'
 > echo 'unencrypted stuff' > encrypt_me.txt 
+
 > ansible-vault encrypt encrypt_me.txt
+
 > cat encrypt_me.txt
 
 - ##### ansible-vault: view encrypted value:
