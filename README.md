@@ -2,6 +2,7 @@
 
 - ##### prerequisite:
 > export VAULT_PASSWORD=my_vault_password
+
 > chmod +x .vault_pass.py
 
 - ##### provision observer 
