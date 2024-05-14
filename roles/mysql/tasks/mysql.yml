@@ -1,0 +1,54 @@
+# tasks file for mysql
+- name: Download sources
+  copy:
+    src: mysql80-community-release-el7-3.noarch.rpm
+    dest: /tmp/mysql80-community-release-el7-3.noarch.rpm
+
+- name: Install package
+  yum:
+    name: /tmp/mysql80-community-release-el7-3.noarch.rpm
+    state: present
+
+- name: import RPM-GPG-KEY
+  command: |
+    sudo rpm --import https://repo.mysql.com/RPM-GPG-KEY-mysql-2023
+
+- name: Install MySQL
+  yum: 
+    name: mysql-community-server
+    state: installed
+
+- name: start and enabled mysqld
+  service:
+    name: mysqld
+    state: started
+    enabled: true
+
+# get default root password
+# cat /var/log/mysql.log | grep password
+# update new root password
+# ALTER USER 'root'@'localhost' IDENTIFIED BY '123456aA@';
+# FLUSH PRIVILEGES;
+- name: get root password
+  shell: |
+    sudo cat /var/log/mysqld.log | grep -i -o 'password.*' | awk -F: '{print $2}' | cut -d ' ' -f 2
+  register: mysql_password
+
+- name: debug root password
+  debug:
+    msg: "{{ mysql_password.stdout }}"
+
+# - name: Check if root password needs to be changed
+#   shell: mysql -u root -p"{{ mysql_password.stdout }}" -e "SELECT user FROM mysql.user WHERE user='root' AND authentication_string='{{ mysql_password.stdout }}';"
+#   register: mysql_root_check
+#   changed_when: false
+#   ignore_errors: true
+
+# - name: Set new root password
+#   expect:
+#     command: mysql -u root -p"{{ mysql_password.stdout }}" -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '{{ new_root_password }}';"
+#     responses:
+#       'Enter password:': "{{ mysql_password.stdout }}"
+#   when: mysql_root_check.rc == 0
+#   vars:
+#     new_root_password: 123456
