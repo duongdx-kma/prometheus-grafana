@@ -1,12 +1,15 @@
 groups:
   - name: instance-rules
     rules:
+      # testing cpu: sudo install stress : --> use instance stress
       - record: job:cpu_utilities_percentage:avg_used
         expr: avg without(host, instance) (100 - avg_over_time(cpu_usage_idle[1m]) - avg_over_time(cpu_usage_steal[1m]))
 
+      # testing memory: sudo install stress : --> use instance stress
       - record: job:memory_utilities_percentage:avg_really_available
         expr: (mem_free + mem_buffered + mem_cached) / mem_total * 100
-
+      
+      # testing disk: sudo fallocate -l 250M /boot/duongdx/duongdx-testing2
       - record: job:disk_utilities_percentage:disk_sdav1_available
         expr: (disk_free{device="sda1"} / disk_total{device="sda1"}) * 100
   
