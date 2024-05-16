@@ -11,13 +11,20 @@ Vagrant.configure("2") do |config|
   config.vm.define "observer" do |node|
       node.vm.provider "virtualbox" do |vb|
         vb.name = "observer"
-        # vb.memory = 512
-        # vb.cpus = 0.5
       end
       node.vm.synced_folder "roles/observer/files/prometheus/rules", "/srv/prometheus/rules", :mount_options => ["dmode=777", "fmode=666"]
       node.vm.hostname = "observer"
       node.vm.network :private_network, ip: "192.168.56.88"
       node.vm.network "forwarded_port", guest: 22, host: 12798
+  end
+
+  config.vm.define "thanosServer" do |node|
+    node.vm.provider "virtualbox" do |vb|
+      vb.name = "thanosServer"
+    end
+    node.vm.hostname = "thanosServer"
+    node.vm.network :private_network, ip: "192.168.56.188"
+    node.vm.network "forwarded_port", guest: 22, host: 12712
   end
 
   (1..NUM_SLAVE_NODE).each do |i|

@@ -22,3 +22,11 @@
     - mysql_servers
   roles:
     - mysql
+
+- name: provision thanos stack
+  hosts: thanos
+  become: yes
+  tags:
+    - thanos_stack
+  roles:
+    - docker-compose

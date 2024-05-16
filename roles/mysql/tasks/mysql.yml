@@ -71,14 +71,6 @@
     state: present
     executable: pip3
 
-- name: Install Python packages
-  pip:
-    name:
-      - pymysql
-      - mysqlclient
-    state: present
-    executable: pip3
-
 - name: Download sources
   copy:
     src: .mysql.cnf
