@@ -1,4 +1,0 @@
----
-# defaults file for docker
-centos: "CentOS"
-ubuntu: "Ubuntu"

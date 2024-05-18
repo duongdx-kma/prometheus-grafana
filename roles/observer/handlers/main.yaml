@@ -1,7 +1,0 @@
----
-# handlers file for telegraf-slave
-- name: restart firewalld
-  systemd:
-    name: firewalld
-    state: restarted
-    daemon_reload: yes

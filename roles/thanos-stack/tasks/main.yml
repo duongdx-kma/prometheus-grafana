@@ -1,0 +1,98 @@
+---
+# tasks file for docker-compose
+- include_tasks: packages-apt.yml
+  when: ansible_pkg_mgr == "apt"
+
+- include_tasks: packages-yum.yml
+  when: ansible_pkg_mgr == "yum"
+
+- name: get docker-compose
+  get_url:
+    url: "https://github.com/docker/compose/releases/download/{{ docker_compose_version }}/docker-compose-linux-x86_64"
+    dest: /usr/local/bin/docker-compose
+    owner: root
+    mode: 0755
+    checksum: "{{ docker_compose_sha256sum }}"
+
+- name: install docker-compose stuff with pip
+  pip:
+    name: " {{ item }}"
+    state: present
+    executable: pip3
+  with_items:
+    - PyYAML>=3.11
+    - docker-py
+    - docker
+    - docker-compose>=1.7.0
+
+#######################################
+# tasks file for observer
+#######################################
+- name: Create Folder /srv/prometheus if not exist
+  file:
+    path: /srv/prometheus
+    mode: 0755
+    state: directory
+
+- name: Create Folder /srv/grafana if not exist
+  file:
+    path: /srv/grafana
+    mode: 0755
+    state: directory
+
+- name: Create Folder /srv/alertmanager if not exist
+  file:
+    path: /srv/alertmanager
+    mode: 0755
+    state: directory
+
+# tasks for passing configuation files to server
+- name: passing prometheus rules folder to server
+  copy:
+    src: prometheus/rules/
+    dest: /srv/prometheus/rules
+    mode: 0644
+
+- name: Create grafana configuration files
+  copy:
+    dest: /srv/
+    src:  "grafana"
+    mode: 0644
+
+#######################################
+# override configuration
+#######################################
+- name: Create alertmanager configuration file
+  template:
+    dest: /srv/alertmanager/alertmanager.yml
+    src: "alertmanager.j2"
+    mode: 0644
+
+- name: override prometheus configuration
+  template:
+    src: "file_sd.j2"
+    dest: /srv/prometheus/file_sd.yml
+    mode: 0644
+
+- name: override prometheus01.yml configuration
+  template:
+    dest: /srv/prometheus/prometheus01.yml
+    src: "prometheus01.j2"
+    mode: 0644
+
+- name: override prometheus02.yml configuration
+  template:
+    dest: /srv/prometheus/prometheus02.yml
+    src: "prometheus02.j2"
+    mode: 0644
+
+######################################
+# passing docker-compose.yml
+######################################
+- name: Create grafana configuration files
+  copy:
+    dest: /home/{{ ansible_user }}
+    src:  docker-compose.yml
+    mode: 0755
+    user: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"

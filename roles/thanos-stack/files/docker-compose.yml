@@ -1,0 +1,310 @@
+version: '3'
+
+networks:
+  monitor-net:
+    driver: bridge
+
+volumes:
+  prometheus01_data: {}
+  prometheus02_data: {}
+  alertmanager_data: {}
+  grafana_data: {}
+  minio_data: {}
+
+services:
+###############################################################
+#                       Cluster01                            #
+###############################################################
+  # prometheus01 container
+  # the prometheus01 container handle collect metrics from exporter, push gateway...
+  prometheus01:
+    image: quay.io/prometheus/prometheus:v2.45.5
+    container_name: prometheus01
+    volumes:
+      - /srv/prometheus:/etc/prometheus
+      - prometheus_main_data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus01.yaml"
+      - "--storage.tsdb.path=/prometheus"
+      # - "--storage.tsdb.retention.time=1d"
+      - "--storage.tsdb.max-block-duration=1h" #
+      - "--storage.tsdb.min-block-duration=1h"
+      - "--web.enable-lifecycle"
+      - "--web.console.libraries=/usr/share/prometheus/console_libraries"
+      - "--web.console.templates=/usr/share/prometheus/consoles"
+    networks:
+      - monitor-net
+    restart: always
+    labels:
+      org.label-schema.group: "monitoring"
+  #---
+  # thanos-sidecar01 container
+  # thanos-sidecar01 container is responsible for pushing data to object storage (s3, minio...) and response data to Thanos Query
+  thanos-sidecar01:
+    image: quay.io/thanos/thanos:v0.35.0
+    container_name: thanos-sidecar01
+    volumes:
+      - prometheus01_data:/prometheus
+      - /srv/thanos/:/etc/thanos/
+    command:
+      - 'sidecar'
+      - '--tsdb.path=/prometheus'
+      - '--prometheus.url=http://prometheus01:9090'
+      - "--grpc-address=0.0.0.0:10091"
+      - "--http-address=0.0.0.0:10902"
+      - "--objstore.config-file=/etc/thanos/bucket_config.yml"
+    networks:
+      - monitor-net
+    depends_on:
+      - minio
+      - prometheus01
+    labels:
+      org.label-schema.group: "monitoring"
+    restart: always
+  #---
+###############################################################
+#                       Cluster02                             #
+###############################################################
+  # prometheus02 container
+  # the prometheus02 container handle collect metrics from exporter, push gateway...
+  prometheus02:
+    image: quay.io/prometheus/prometheus:v2.45.5
+    container_name: prometheus02
+    volumes:
+      - /srv/prometheus:/etc/prometheus
+      - prometheus_main_data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus02.yaml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--storage.tsdb.max-block-duration=1h"
+      - "--storage.tsdb.min-block-duration=1h"
+      - "--web.enable-lifecycle"
+      - "--web.console.libraries=/usr/share/prometheus/console_libraries"
+      - "--web.console.templates=/usr/share/prometheus/consoles"
+    networks:
+      - monitor-net
+    restart: always
+    labels:
+      org.label-schema.group: "monitoring"
+  #---
+  # thanos-sidecar02 container
+  # thanos-sidecar02 container is responsible for pushing data to object storage (s3, minio...) and response data to Thanos Query
+  thanos-sidecar02:
+    image: quay.io/thanos/thanos:v0.35.0
+    container_name: thanos-sidecar02
+    volumes:
+      - prometheus02_data:/prometheus
+      - /srv/thanos/:/etc/thanos/
+    command:
+      - 'sidecar'
+      - '--tsdb.path=/prometheus'
+      - '--prometheus.url=http://prometheus02:9090'
+      - "--grpc-address=0.0.0.0:10091"
+      - "--http-address=0.0.0.0:10902"
+      - "--objstore.config-file=/etc/thanos/bucket_config.yml"
+    networks:
+      - monitor-net
+    depends_on:
+      - minio
+      - prometheus02
+    labels:
+      org.label-schema.group: "monitoring"
+    restart: always
+###############################################################
+#                       Managa stack                          #
+###############################################################
+  # alertmanager container
+  alertmanager:
+    container_name: alertmanager
+    image: quay.io/prometheus/alertmanager:v0.27.0
+    ports:
+      - 9093:9093
+    volumes:
+      - alertmanager_data:/data
+      - ./alertmanager/:/etc/alertmanager/
+    networks:
+      - monitor-net
+    labels:
+      org.label-schema.group: "monitoring"
+    restart: always
+    command:
+      - "--config.file=/etc/alertmanager/config.yml"
+      - "--storage.path=/alertmanager"
+      - "--web.external-url=0.0.0.0:9093"
+  #---
+  # grafana container
+  grafana:
+    container_name: grafana
+    image: grafana/grafana:10.1.9
+    depends_on:
+      - prometheus-1
+      - prometheus-2
+    ports:
+      - 3000:3000
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - /srv/grafana/provisioning:/etc/grafana/provisioning
+      - /srv/grafana/dashboards:/var/lib/grafana/dashboards
+    networks:
+      - monitor-net
+    labels:
+      org.label-schema.group: "monitoring"
+    restart: always
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin1
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SERVER_SERVE_FROM_SUB_PATH=true
+      - GF_SERVER_ROOT_URL=http://server1/grafana
+  #---
+  # thanos-querier
+  # thathanos-querier container is responsible for query data from thanos-sidecar and thanos-s3
+  thanos-querier:
+    image: quay.io/thanos/thanos:v0.35.0
+    container_name: thanos
+    command:
+      - "query"
+      - "--grpc-address=0.0.0.0:10091"
+      - "--http-address=0.0.0.0:10902"
+      - "--query.replica-label=replica"
+      - "--store=thanos-sidecar01:10091" # query data from thanos-sidecar01
+      - "--store=thanos-sidecar02:10091" # query data from thanos-sidecar02
+      - "--store=thanos-store-gateway:10091" # query data from thanos-store-gateway(thanos-store)
+      - "--web.external-prefix=thanos"
+    ports:
+      - 10902:10902
+    depends_on:
+      - thanos-sidecar01
+      - thanos-sidecar02
+    networks:
+      - monitor-net
+    labels:
+      org.label-schema.group: "monitoring"
+    restart: always
+
+  # thanos-store-gateway (thanos-store)
+  # Thanos Store Gateway: work as an API Gateway between your Thanos cluster and the Object store.
+  # Thanos Store Gateway: that require access to your Object storage (s3, minio ...)
+  # It keeps a small amount of information about all remote blocks on the local disk and keeps it in sync with the bucket
+  thanos-store-gateway:
+    image: quay.io/thanos/thanos:v0.35.0
+    volumes:
+      - /srv/thanos/:/etc/thanos/
+    command:
+      - "store"
+      - "--grpc-address=0.0.0.0:10091"
+      - "--http-address=0.0.0.0:10902"
+      - "--data-dir=/tmp/thanos/store"
+      - "--objstore.config-file=/etc/thanos/bucket_config.yaml"
+    depends_on:
+      - minio
+    networks:
+      - monitor-net
+    labels:
+      org.label-schema.group: "monitoring"
+    restart: always
+
+  # thanos-compactor:
+  # Compacts, down samples and applies retention on the data stored in cloud storage bucket.
+  thanos-compactor:
+    image: quay.io/thanos/thanos:v0.35.0
+    volumes:
+      - /srv/thanos/:/etc/thanos/
+    command:
+      - "compact"
+      - "--log.level=debug"
+      - "--data-dir=/data"
+      - "--objstore.config-file=/etc/thanos/bucket_config.yaml"
+      - "--wait"
+    depends_on:
+      - minio
+    networks:
+      - monitor-net
+    labels:
+      org.label-schema.group: "monitoring"
+    restart: always
+
+  # thanos-ruler:
+  # Evaluates recording and alerting rules against data in Thanos for exposition and/or upload.
+  # Participates in the system as a store node, which means that it exposes StoreAPI and uploads its generated TSDB blocks to an object store
+  thanos-ruler:
+    image: quay.io/thanos/thanos:v0.35.0
+    volumes:
+      - /srv/thanos/:/etc/thanos/
+    command:
+      - "rule"
+      - "--grpc-address=0.0.0.0:10091"
+      - "--http-address=0.0.0.0:10902"
+      - "--log.level=debug"
+      - "--data-dir=/data"
+      - "--eval-interval=15s"
+      - "--rule-file=/etc/thanos/*.rules.yaml"
+      - "--alertmanagers.url=http://alertmanager:9093" # using alertmanagers
+      - "--query=thanos-querier:10902" # using thanos query
+      - "--objstore.config-file=/etc/thanos/bucket_config.yaml"
+      - '--label=ruler_cluster="app"'
+      - '--label=ruler_replica="r1"'
+    ports:
+      - 10903:10902
+    depends_on:
+      - minio
+      - thanos-querier
+    networks:
+      - monitor-net
+    labels:
+      org.label-schema.group: "monitoring"
+    restart: always
+
+  # thanos-bucket-web
+  # Thanos tools bucket web: This is used to inspect bucket blocks from a Web UI
+  thanos-bucket-web:
+    image: quay.io/thanos/thanos:v0.35.0
+    volumes:
+      - ./thanos/:/etc/thanos/
+    command:
+      - "tools"
+      - "bucket"
+      - "web"
+      - "--http-address=0.0.0.0:10902"
+      - "--log.level=debug"
+      - "--objstore.config-file=/etc/thanos/bucket_config.yaml"
+      - "--refresh=5m"
+      - "--timeout=2m"
+      - "--label=replica"
+    ports:
+      - 10904:10902
+    depends_on:
+      - minio
+    networks:
+      - monitor-net
+    labels:
+      org.label-schema.group: "monitoring"
+    restart: always
+
+  # portatiner
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: portainer
+    networks:
+      - app_network
+    ports:
+      - "9999:9000"
+    volumes:
+      - portainer_data:/data
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: unless-stopped
+
+  # minio
+  minio:
+    image: minio/minio:RELEASE.2024-03-10T02-53-48Z
+    container_name: minio
+    networks:
+      - app_network
+    volumes:
+      - minio_data:/data
+    ports:
+      - "9000"
+      - "9001"
+    environment:
+      - MINIO_ROOT_USER=minio
+      - MINIO_ROOT_PASSWORD=minio@123
+    command: minio server --console-address ":9001" /data

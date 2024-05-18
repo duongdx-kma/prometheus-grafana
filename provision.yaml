@@ -3,9 +3,9 @@
   become: yes
   tags:
     - observer
+    - thanos_stack
   roles:
-    - docker
-    - observer
+    - thanos-stack
 
 - name: provision slave servers
   hosts: slave_servers
@@ -22,11 +22,3 @@
     - mysql_servers
   roles:
     - mysql
-
-- name: provision thanos stack
-  hosts: thanos
-  become: yes
-  tags:
-    - thanos_stack
-  roles:
-    - docker-compose

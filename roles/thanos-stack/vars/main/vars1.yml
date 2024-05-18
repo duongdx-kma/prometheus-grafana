@@ -1,10 +1,13 @@
 ---
-# defaults file for observer
+# vars file for docker-compose
+docker_compose_version: v2.26.0
+docker_compose_sha256sum: sha256:59c6b262bedc4a02f46c8400e830e660935684899c770c3f5e804a2b7079fc16
+docker_compose_cache_valid_time: 84600
+
+# defaults file for thanos
 prometheus_version: v2.45.3
 grafana_version: "10.1.9"
 alertmanager_version: v0.27.0
-alertmanagers_endpoint: 192.168.56.88:9093
-prometheus_endpoint: http://192.168.56.88:9090
 
 telegraf_host:
   - host: "192.168.56.90:9273"

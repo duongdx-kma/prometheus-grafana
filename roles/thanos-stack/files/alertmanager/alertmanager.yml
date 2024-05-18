@@ -15,7 +15,7 @@ route:
   # t = 100s => alert firing { x='c' }
   # t = 150s => alert firing { x='d' }
   # t = 330s => { x='a' }, { x='b' }, { x='c' } and { x='d' } => (done group_interval + group_wait) => send to receiver group
-  # t = 450s => alert firing { x='e' } 
+  # t = 450s => alert firing { x='e' }
   # t = 500s => RESOLVED { x='a' }, { x='c' }
   # t = 630s => { x='b' }, { x='d' } and { x='e' } => send to receiver group
   # t = 930s => if no new alert come in => no notifications is sent => Then repeat_interval come in 🔔

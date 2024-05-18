@@ -8,45 +8,6 @@ scrape_configs:
     static_configs:
     - targets: ["localhost:9090"]
 
-  - job_name: mysqld_exporter
-    metrics_path: /metrics
-    static_configs:
-    - targets:
-      {% for item in mysqld_exporter_hosts %}
-      - {{ item }}
-      {% endfor %}
-
-  - job_name: telegraf
-    metrics_path: /metrics
-    file_sd_configs:
-      - files:
-        - file_sd.yml
-    relabel_configs:
-      - source_labels: [team]
-        regex: '(.*)'
-        replacement: 'organization_HaNoi_${1}'
-        target_label: team
-      # remove active = "false"
-      - source_labels: [active]
-        regex: (false|inactive|drop)
-        action: drop
-      # keep active = "true"
-      - source_labels: [active]
-        regex: (true|active|keep)
-        action: keep
-
-  - job_name: aws_ec2_instance
-    metrics_path: /metrics
-    ec2_sd_configs:
-      - access_key: "{{ aws_access_key }}"
-        secret_key: "{{ aws_secret_key }}"
-        region: "{{ aws_region }}"
-    relabel_configs:
-      - source_labels: [__meta_ec2_public_ip]
-        regex: '(.*)'
-        replacement: '${1}:9100'
-        target_label: __address__
-
   - job_name: program
     metrics_path: /
     static_configs:
@@ -148,12 +109,5 @@ scrape_configs:
         replacement: {{ blackbox_exporter_hosts[0] }}  # The blackbox exporter's real hostname:port.
     
 rule_files:
-  #- rules/prometheus_alerts_rules.yml
   - rules/instance-rules.yml
   - rules/application-rules.yml
-
-alerting:
-  alertmanagers:
-    - static_configs:
-      - targets:
-        - {{ alertmanagers_endpoint }}

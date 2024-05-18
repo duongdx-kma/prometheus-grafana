@@ -6,8 +6,6 @@ all:
       ansible_host: 192.168.56.90
     slave02:
       ansible_host: 192.168.56.91
-    thanos:
-      ansible_host: 192.168.56.188
 
   children:
     observer_servers:
@@ -18,15 +16,11 @@ all:
       hosts:
         slave01:
         slave02:
-    thanos:
-      hosts:
-        thanos:
-    
+
     mix_group:
       children:
         observer_servers:
         slave_servers:
-        thanos:
       vars:
         ansible_user: deploy
         ansible_ssh_private_key_file: client.pem
