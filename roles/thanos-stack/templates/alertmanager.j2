@@ -72,11 +72,11 @@ receivers:
   email_configs:
     - to: {{ admin_user_email }}
       # check global config
-      # from: {{ auth_username }}
-      # smarthost: {{ smtp_server }}
-      # auth_username: {{ auth_username }}
-      # auth_identity: {{ auth_username }}
-      # auth_password: {{ auth_password }}
+      # from: auth_username
+      # smarthost: smtp_server
+      # auth_username: auth_username
+      # auth_identity: auth_username
+      # auth_password: auth_password
       headers:
           subject: 'Prometheus Mail Alerts'
 
@@ -89,10 +89,10 @@ receivers:
   email_configs:
     - to: {{ python_application_manager_user_email }}
       # check global config
-      # from: {{ auth_username }}
-      # smarthost: {{ smtp_server }}
-      # auth_username: {{ auth_username }}
-      # auth_identity: {{ auth_username }}
-      # auth_password: {{ auth_password }}
+      # from: auth_username
+      # smarthost: smtp_server
+      # auth_username: auth_username
+      # auth_identity: auth_username
+      # auth_password: auth_password
       headers:
           subject: 'Prometheus Mail Alerts: Notify for Applications'

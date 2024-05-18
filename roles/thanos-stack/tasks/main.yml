@@ -49,14 +49,19 @@
 # tasks for passing configuation files to server
 - name: passing prometheus rules folder to server
   copy:
-    src: prometheus/rules/
     dest: /srv/prometheus/rules
+    src: prometheus/rules/
     mode: 0644
 
 - name: Create grafana configuration files
   copy:
     dest: /srv/
     src:  "grafana"
+    mode: 0644
+- name: Create grafana configuration files
+  copy:
+    dest: /srv/
+    src:  "thanos"
     mode: 0644
 
 #######################################
@@ -92,7 +97,7 @@
 - name: Create grafana configuration files
   copy:
     dest: /home/{{ ansible_user }}
-    src:  docker-compose.yml
+    src:  docker-compose
     mode: 0755
     user: "{{ ansible_user }}"
     group: "{{ ansible_user }}"

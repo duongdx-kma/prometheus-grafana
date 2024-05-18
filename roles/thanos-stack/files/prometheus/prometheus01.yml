@@ -1,6 +1,9 @@
 global:
   scrape_interval: 15s
   evaluation_interval: 15s
+  external_labels: # must be configured for thanos-sidecar
+    cluster: 'cluster01'
+    replica: '1'
 
 scrape_configs:
   - job_name: prometheus
@@ -45,3 +48,11 @@ rule_files:
   #- rules/prometheus_alerts_rules.yml
   - rules/instance-rules.yml
   - rules/application-rules.yml
+
+# alert
+alerting:
+  alertmanagers:
+    - scheme: http
+      static_configs:
+        - targets:
+            - 'alertmanager:9093'
