@@ -23,6 +23,5 @@ Steps:
 
 - ##### add user for mysqld_exporter: (if change password need edit mysqld_exporter.credential.cnf)
 
-> CREATE USER 'mysqld_exporter'@'%' IDENTIFIED BY '123456aA@';
-
-> GRANT ALL PRIVILEGES ON *.* TO 'mysqld_exporter'@'%' WITH GRANT OPTION;
+> CREATE USER 'mysqld_exporter'@'localhost' IDENTIFIED BY 'StrongPassword'
+> GRANT PROCESS, REPLICATION CLIENT, SELECT ON *.* TO 'mysqld_exporter'@'localhost';
