@@ -1,0 +1,56 @@
+- name: config nginx servers
+  hosts: observer
+  become: yes
+  tasks:
+  - name: passing script file
+    copy:
+      src: edit-nginx-config/handle.py
+      dest: "/home/{{ ansible_user }}"
+      mode: 0755
+
+  - name: passing while lists folder
+    copy:
+      src: edit-nginx-config/white_lists
+      dest: /etc/nginx
+      owner: nginx
+      group: nginx
+      mode: 0644
+
+  - name: running python script
+    command: python "/home/{{ansible_user}}/handle.py"
+    notify: restart nginx
+
+  - name: create let's encrypt pre-renew directory
+    file:
+      path: /etc/letsencrypt/renewal-hooks/pre
+      state: directory
+      recurse: true
+
+  - name: create let's encrypt post-renew directory
+    file:
+      path: /etc/letsencrypt/renewal-hooks/post
+      state: directory
+      recurse: true
+
+  - name: passing let's encrypt bash file
+    copy:
+      src: edit-nginx-config/letsencrypt/pre-renewal.sh
+      dest: "/etc/letsencrypt/renewal-hooks/pre"
+      owner: "root"
+      group: "root"
+      mode: 0755
+
+  - name: passing let's encrypt bash file
+    copy:
+      src: edit-nginx-config/letsencrypt/post-renewal.sh
+      dest: "/etc/letsencrypt/renewal-hooks/post"
+      owner: "root"
+      group: "root"
+      mode: 0755
+
+  handlers:
+  - name: restart nginx
+    service:
+      name: nginx
+      state: restarted
+      enabled: yes

@@ -13,7 +13,7 @@
   tags:
     - slave_servers
   roles:
-    - target 
+    - target
 
 - name: provision mysql servers and config
   hosts: slave01
